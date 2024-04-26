@@ -23,7 +23,7 @@ class ImagesWriter(Writer):
         os.makedirs(self.root)
 
     def write(self, item, source_idx, list_idx):
-        name = f"{item.name}_{list_idx}"
+        name = f"{item.id}_{list_idx}"
         name = name.replace("/", "___")
         image = item.image
         cv2.imwrite(os.path.join(self.root, f"{name}.png"), image)
