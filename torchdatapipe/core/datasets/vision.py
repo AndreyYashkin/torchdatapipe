@@ -10,14 +10,10 @@ from torchdatapipe.utils.vision import rect_mode_size
 # TODO должен быть от списка файлов
 class ImageDataset(Dataset):
     def __init__(self, names, files, imgsz=None, rect_mode=False):
-        # print("WWWW", root, mask)
-        # files = sorted(glob(mask, root_dir=root, recursive=recursive))
         self.names = names
-        # self.files = [os.path.join(root, f) for f in files]
         self.files = files
         self.imgsz = imgsz
         self.rect_mode = rect_mode
-        # self.interpolation = interpolation
 
     @staticmethod
     def from_mask(root, mask, imgsz, transforms=[], recursive=False):

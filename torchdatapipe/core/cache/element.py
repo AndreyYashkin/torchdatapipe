@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class CachingElemet(ABC):
+class VersionedElemet(ABC):
     @property
     @abstractmethod
     def version(self) -> str:
@@ -12,9 +12,13 @@ class CachingElemet(ABC):
     def params(self) -> dict:
         pass
 
+    # TODO @property ???
+    # TODO может вместо этого запилить метод __hash__?!
     def cache_description(self) -> dict:
         return dict(cls=type(self).__name__, version=self.version, params=self.params)
 
+
+class CachingElemet(VersionedElemet):
     @abstractmethod
     def start_caching(self):
         pass

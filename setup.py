@@ -35,6 +35,8 @@ for key, values in extras_require.items():
     extras_require_torch[key + "_torch"] = values + torch_req
 extras_require.update(extras_require_torch)
 
+print(setuptools.find_packages())
+
 setuptools.setup(
     name="torchdatapipe",
     # Versions should comply with PEP440.  For a discussion on single-sourcing
