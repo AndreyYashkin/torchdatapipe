@@ -3,7 +3,7 @@ from .preprocessor import Preprocessor
 
 class MapClass(Preprocessor):
     def __init__(self, mapping, unknown_ok, default=None):
-        self.mapping = mapping
+        self.mapping = dict(mapping)
         self.unknown_ok = unknown_ok
         self.default = default
 

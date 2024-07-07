@@ -84,7 +84,11 @@ class Flatten(Preprocessor):
         pass
 
     def __call__(self, item_lists):
+        if item_lists is None:
+            return []
         for items in item_lists:
+            if items is None:
+                continue
             for item in items:
                 yield item
 

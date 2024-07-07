@@ -5,7 +5,7 @@ from torchdatapipe.collections.vision.utils.general import rect_mode_size
 
 class ResizeScene(Preprocessor):
     def __init__(self, imgsz, interpolation=cv2.INTER_NEAREST, rect_mode=False):
-        self.imgsz = imgsz
+        self.imgsz = list(imgsz)
         self.interpolation = interpolation
         self.rect_mode = rect_mode
 
