@@ -3,7 +3,7 @@ try:
 except ImportError:
     print("no datumaro")
     pass
-from torchdatapipe.cache.sources.source import Source
+from torchdatapipe.core.cache.sources import Source
 
 
 # TODO нужно как-то обрабтыванить подмножества
@@ -24,12 +24,16 @@ class DatumaroSource(Source):
     def params(self):
         return dict(root=self.root, format=self.format)
 
+    @property
+    def dataset(self):
+        return self.__dataset
+
     def start_caching(self):
         # TODO https://openvinotoolkit.github.io/datumaro/latest/docs/jupyter_notebook_examples/ \
         # notebooks/05_transform.html#Transform-media-ID
         ds = Dataset.import_from(self.root, self.format)
-        ds = ds.filter("/item/annotation")
-        self.items = list(ds)
+        self.__dataset = ds.filter("/item/annotation")
+        self.items = list(self.dataset)
         # if len(self.items):
         #     print(self.items[0].media.data)
 
@@ -40,4 +44,5 @@ class DatumaroSource(Source):
         return self.items[idx]
 
     def finish_caching(self):
+        self.__dataset = None
         self.items = None

@@ -17,7 +17,8 @@ def __cache_item(source, preprocessor, writer, idx):
         return None
     items = preprocessor(item)
     for i, item in enumerate(items):
-        writer.write(item, idx, i)
+        if item is not None:
+            writer.write(item, idx, i)
 
 
 def cache(source, preprocessor, writer, n_jobs):

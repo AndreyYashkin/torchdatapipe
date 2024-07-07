@@ -1,7 +1,7 @@
 import os
 import json
 from glob import glob
-from .source import Source
+from torchdatapipe.core.cache.sources import Source
 
 
 default_dataset_attributes = [

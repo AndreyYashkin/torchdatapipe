@@ -1,6 +1,6 @@
 import os
 import cv2
-from .writer import Writer
+from torchdatapipe.core.cache.writers import Writer
 
 
 class ImagesWriter(Writer):

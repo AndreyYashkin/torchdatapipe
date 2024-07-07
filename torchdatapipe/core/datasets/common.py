@@ -29,11 +29,11 @@ class JoinedDataset(Dataset):
 class TransformedDataset(Dataset):
     def __init__(self, dataset, transform_fn):
         self.ds = dataset
-        self.transform_fn = transform_fn
+        self.__transform_fn = transform_fn
 
     def __len__(self):
         return len(self.ds)
 
     def __getitem__(self, idx):
         item = self.ds[idx]
-        return self.transform_fn(item)
+        return self.__transform_fn(item)

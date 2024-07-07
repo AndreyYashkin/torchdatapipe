@@ -1,8 +1,8 @@
+import numpy as np
 from abc import ABC, abstractmethod
 
 # from torch.utils.data import ConcatDataset
-from torchdatapipe.samplers import DistributedSampler
-from ..samplers import ConcatSampler, ConcatDatasetItemSampler, split_seed
+from torchdatapipe.core.samplers import ListSampler, ConcatSampler, ConcatDatasetSampler
 from ..datasets.common import JoinedDataset
 
 
@@ -17,11 +17,11 @@ class DataPipeline(ABC):
         pass
 
     @abstractmethod
-    def get_sampler(self, shuffle=True, seed=0, drop_last=False):
+    def get_sampler(self, shuffle=True):
         pass
 
     # @abstractmethod
-    def get_batch_sampler(self, batch_size, shuffle=True, seed=0, drop_last=False):
+    def get_batch_sampler(self, batch_size, shuffle=True, drop_last=False):
         pass
 
 
@@ -33,28 +33,30 @@ class Identity(DataPipeline):
     def dataset(self):
         return self.pipeline.dataset
 
-    def get_sampler(self, shuffle=True, seed=0, drop_last=False):
-        return self.pipeline.get_sampler(shuffle, seed, drop_last)
+    def get_sampler(self, shuffle=True, drop_last=False):
+        return self.pipeline.get_sampler(shuffle, drop_last)
 
-    def get_batch_sampler(self, batch_size, shuffle=True, seed=0, drop_last=False):
-        return self.pipeline.get_batch_sampler(batch_size, shuffle, seed, drop_last)
+    def get_batch_sampler(self, batch_size, shuffle=True, drop_last=False):
+        return self.pipeline.get_batch_sampler(batch_size, shuffle, drop_last)
 
 
 class MapStyleDataPipeline(DataPipeline):
-    def get_sampler(self, shuffle=True, seed=0, drop_last=False):
-        return DistributedSampler(self.dataset, shuffle=shuffle, seed=seed, drop_last=drop_last)
+    def get_sampler(self, shuffle=True):
+        indices = np.arange(len(self.dataset))
+        return ListSampler(indices, shuffle=shuffle)
 
-    def get_batch_sampler(self, batch_size, shuffle=True, seed=0, drop_last=False):
+    def get_batch_sampler(self, batch_size, shuffle=True, drop_last=False):
         return None
 
 
 import os
-from torchdatapipe.cache.pipeline import (
-    cache,
-    write_cache_description,
-    delete_cache_description,
-    check_cache_description,
-)
+from torchdatapipe.core.cache import CachePipeline
+
+#     cache,
+#     write_cache_description,
+#     delete_cache_description,
+#     check_cache_description,
+# )
 
 
 class DefaultDatasetPipeline(MapStyleDataPipeline):
@@ -87,10 +89,11 @@ class DefaultDatasetPipeline(MapStyleDataPipeline):
         writer_root = os.path.join(cache_dir, self.data_root)
         writer = self.get_writer(writer_root)
 
-        if not check_cache_description(source, preprocessor, writer):
-            delete_cache_description(writer)
-            cache(source, preprocessor, writer, n_jobs=n_jobs)
-            write_cache_description(source, preprocessor, writer)
+        cache_pipe = CachePipeline(source, preprocessor, writer)
+        if not cache_pipe.check_cache_description():
+            cache_pipe.delete_cache_description()
+            cache_pipe.create_cache()
+            cache_pipe.write_cache_description()
 
         self.__dataset = self.get_dataset(writer_root)
 
@@ -120,15 +123,13 @@ class ConcatPipeline(DataPipeline):
     def dataset(self):
         return self.__dataset
 
-    def get_sampler(self, shuffle=True, seed=0, drop_last=False):
+    def get_sampler(self, shuffle=True):
         samplers = []
-        _seeds = split_seed(seed, len(self.pipelines) + 1)
-        concat_seed, seeds = _seeds[0], _seeds[1:]
-        for pipeline, seed in zip(self.pipelines, seeds):
-            sampler = pipeline.get_sampler(shuffle=shuffle, seed=seed, drop_last=drop_last)
+        for pipeline in self.pipelines:
+            sampler = pipeline.get_sampler(shuffle=shuffle)
             samplers.append(sampler)
 
-        sampler = ConcatDatasetItemSampler(samplers, shuffle=shuffle, seed=concat_seed)
+        sampler = ConcatDatasetSampler(samplers, shuffle=shuffle)
         return sampler
 
 
@@ -142,15 +143,13 @@ class BaseMultiIndexDataPipeline(DataPipeline):
     #     # return ds
     #     pass
 
-    def get_sampler(self, shuffle=True, seed=0, drop_last=False):
+    def get_sampler(self, shuffle=True):
         samplers = []
-        _seeds = split_seed(seed, len(self.portions) + 1)
-        concat_seed, seeds = _seeds[0], _seeds[1:]
-        for portion, seed in zip(self.portions, seeds):
-            sampler = portion.get_sampler(shuffle=shuffle, seed=seed, drop_last=drop_last)
+        for portion in self.portions:
+            sampler = portion.get_sampler(shuffle=shuffle)
             samplers.append(sampler)
 
-        sampler = ConcatSampler(samplers, shuffle=shuffle, seed=concat_seed)
+        sampler = ConcatSampler(samplers, shuffle=shuffle)
         return sampler
 
 
@@ -158,8 +157,8 @@ class TransformPipeline(DataPipeline):
     def __init__(self, pipeline):
         self.pipeline = pipeline
 
-    def get_sampler(self, shuffle=True, seed=0, drop_last=False):
-        return self.pipeline.get_sampler(shuffle, seed, drop_last)
+    def get_sampler(self, shuffle=True):
+        return self.pipeline.get_sampler(shuffle)
 
-    def get_batch_sampler(self, batch_size, shuffle=True, seed=0, drop_last=False):
-        return self.pipeline.get_batch_sampler(batch_size, shuffle, seed, drop_last)
+    def get_batch_sampler(self, batch_size, shuffle=True, drop_last=False):
+        return self.pipeline.get_batch_sampler(batch_size, shuffle, drop_last)

@@ -3,8 +3,8 @@ import cv2
 import numpy as np
 from glob import glob
 from torch.utils.data import Dataset, ConcatDataset
-from torchdatapipe.types.vision import ImageScene
-from torchdatapipe.utils.vision import rect_mode_size
+from torchdatapipe.collections.vision.types.vision import ImageScene
+from torchdatapipe.collections.vision.utils.general import rect_mode_size
 
 
 # TODO должен быть от списка файлов
@@ -19,6 +19,7 @@ class ImageDataset(Dataset):
     def from_mask(root, mask, imgsz, transforms=[], recursive=False):
         names, images = [], []
         _images = sorted(glob(f"*{mask}", root_dir=root, recursive=recursive))
+        print(root, f"*{mask}")
         images = []
         for image in _images:
             name = image[: -len(mask) + 1]
@@ -42,6 +43,7 @@ class ImageDataset(Dataset):
                     print("ext", root, mask + ext, len(ds))
                 if len(ds):
                     datasets.append(ds)
+        # print("datasets", datasets)
         return ConcatDataset(datasets)
 
     def __len__(self):
@@ -60,9 +62,10 @@ class ImageDataset(Dataset):
 
 
 class ReplacedBackgroundDataset(Dataset):
-    def __init__(self, dataset, backrounds, p=1):
+    def __init__(self, dataset, backrounds, get_backround_mask_fn, p=1):
         self.dataset = dataset
         self.backrounds = backrounds
+        self.get_backround_mask_fn = get_backround_mask_fn
         self.p = p
 
     def __len__(self):
@@ -76,11 +79,8 @@ class ReplacedBackgroundDataset(Dataset):
             return item
 
         back = self.backrounds[idx1]
-        mask = self.get_backround_mask(item)
+        mask = self.get_backround_mask_fn(item)
 
         item.image[mask > 0] = back.image[mask > 0]
 
         return item
-
-    def get_backround_mask(self, item):
-        raise NotImplementedError

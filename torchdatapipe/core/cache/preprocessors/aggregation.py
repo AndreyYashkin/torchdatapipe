@@ -2,19 +2,21 @@ from .preprocessor import Preprocessor
 
 
 class Sequential(Preprocessor):
-    def __init__(self, adapters):
-        self.adapters = adapters
+    def __init__(self, preprocessors):
+        self.preprocessors = preprocessors
 
     def start_caching(self):
-        pass
+        for p in self.preprocessors:
+            p.start_caching()
 
     def __call__(self, item):
-        for a in self.adapters:
+        for a in self.preprocessors:
             item = a(item)
         return item
 
     def finish_caching(self):
-        pass
+        for p in self.preprocessors:
+            p.finish_caching()
 
     @property
     def version(self):
@@ -22,8 +24,8 @@ class Sequential(Preprocessor):
 
     @property
     def params(self):
-        adapters = [a.cache_description() for a in self.adapters]
-        return adapters
+        preprocessors = [a.cache_description() for a in self.preprocessors]
+        return preprocessors
 
 
 class ToList(Preprocessor):
@@ -56,13 +58,35 @@ class TransormList(Preprocessor):
         self.transoform = transoform
 
     def start_caching(self):
-        pass
+        self.transoform.start_caching()
 
     def __call__(self, items):
-        # resized = []
         for item in items:
             yield self.transoform(item)
-        # return resized
+
+    def finish_caching(self):
+        self.transoform.finish_caching()
+
+    @property
+    def version(self):
+        return None
+
+    @property
+    def params(self):
+        return self.transoform.cache_description()
+
+
+class Flatten(Preprocessor):
+    def __init__(self):
+        pass
+
+    def start_caching(self):
+        pass
+
+    def __call__(self, item_lists):
+        for items in item_lists:
+            for item in items:
+                yield item
 
     def finish_caching(self):
         pass
@@ -73,4 +97,4 @@ class TransormList(Preprocessor):
 
     @property
     def params(self):
-        return self.transoform.cache_description()
+        return None

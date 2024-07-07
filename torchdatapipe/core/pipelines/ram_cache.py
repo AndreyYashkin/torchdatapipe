@@ -1,4 +1,4 @@
-from torchdatapipe.datasets.common import RAMCacheDataset
+from torchdatapipe.core.datasets import RAMCacheDataset
 from .pipeline import DataPipeline
 
 
@@ -14,8 +14,8 @@ class RAMCachePipeline(DataPipeline):
     def dataset(self):
         return self.__dataset
 
-    def get_sampler(self, shuffle=True, seed=0, drop_last=False):
-        return self.pipeline.get_sampler(shuffle, seed, drop_last)
+    def get_sampler(self, shuffle=True):
+        return self.pipeline.get_sampler(shuffle)
 
-    def get_batch_sampler(self, batch_size, shuffle=True, seed=0, drop_last=False):
-        return self.pipeline.get_batch_sampler(batch_size, shuffle, seed, drop_last)
+    def get_batch_sampler(self, batch_size, shuffle=True, drop_last=False):
+        return self.pipeline.get_batch_sampler(batch_size, shuffle, drop_last)

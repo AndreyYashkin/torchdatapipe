@@ -1,5 +1,5 @@
-from .source import Source
-from torchdatapipe.datasets.vision import ImageDataset
+from torchdatapipe.core.cache.sources import Source
+from torchdatapipe.collections.vision.datasets import ImageDataset
 
 
 class ImageDirSource(Source):
