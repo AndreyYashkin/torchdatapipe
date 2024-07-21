@@ -22,7 +22,8 @@ class JoinedDataset(Dataset):
         return self.__length
 
     def __getitem__(self, idx):
-        idx0, idx1 = idx
+        idx0 = idx.dataset
+        idx1 = idx.index
         return self.datasets[idx0][idx1]
 
 
