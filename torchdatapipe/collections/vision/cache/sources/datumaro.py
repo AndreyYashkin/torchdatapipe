@@ -8,9 +8,10 @@ from torchdatapipe.core.cache.sources import Source
 
 # TODO нужно как-то обрабтыванить подмножества
 class DatumaroSource(Source):
-    def __init__(self, root, format=None):
+    def __init__(self, root, format=None, subset=None):
         self.__root = root
         self.format = format
+        self.subset = subset
 
     @property
     def root(self):
@@ -18,11 +19,11 @@ class DatumaroSource(Source):
 
     @property
     def version(self):
-        return "0.0.0"
+        return "0.0.1"
 
     @property
     def params(self):
-        return dict(root=self.root, format=self.format)
+        return dict(root=self.root, format=self.format, subset=self.subset)
 
     @property
     def dataset(self):
@@ -31,8 +32,10 @@ class DatumaroSource(Source):
     def start_caching(self):
         # TODO https://openvinotoolkit.github.io/datumaro/latest/docs/jupyter_notebook_examples/ \
         # notebooks/05_transform.html#Transform-media-ID
-        ds = Dataset.import_from(self.root, self.format)
-        self.__dataset = ds.filter("/item/annotation")
+        self.__dataset = Dataset.import_from(self.root, self.format)
+        # self.__dataset = ds.filter("/item/annotation")
+        if self.subset is not None:
+            self.__dataset = self.__dataset.get_subset(self.subset)
         self.items = list(self.dataset)
         # if len(self.items):
         #     print(self.items[0].media.data)

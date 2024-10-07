@@ -1,6 +1,28 @@
 from .preprocessor import Preprocessor
 
 
+class Identity(Preprocessor):
+    def __init__(self):
+        pass
+
+    def start_caching(self):
+        pass
+
+    def __call__(self, item):
+        return item
+
+    def finish_caching(self):
+        pass
+
+    @property
+    def version(self):
+        return None
+
+    @property
+    def params(self):
+        return None
+
+
 class Sequential(Preprocessor):
     def __init__(self, preprocessors):
         self.preprocessors = preprocessors

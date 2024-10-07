@@ -34,6 +34,11 @@ class BinaryWriter(DatasetWriter):
     def start_caching(self):
         os.makedirs(self.root)
 
+    def get_filename(self, item, source_idx, list_idx):
+        name = f"{item.id}_{list_idx}"
+        filename = name.replace("/", "___")
+        return filename
+
     def write(self, item, source_idx, list_idx):
         # item = self.to_binary(item)
         item = self.to_binary_fn(item)
@@ -43,8 +48,7 @@ class BinaryWriter(DatasetWriter):
             if key in data:
                 data[key] = codec.encode(data[key])
 
-        name = f"{item.id}_{list_idx}"
-        filename = name.replace("/", "___")
+        filename = self.get_filename(item, source_idx, list_idx)
         pickle_cache = os.path.join(self.root, filename + ".pickle")
         with open(pickle_cache, "wb") as outfile:
             pickle.dump(dict(id=item.id, data=data), outfile)

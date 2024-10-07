@@ -21,6 +21,7 @@ except ImportError:
 class UnitTestSamplers(unittest.TestCase):
     def get_samplers(self):
         samplers = {
+            "EmptySampler": ListSampler(list(), shuffle=True),
             "ListSampler": ListSampler(list(range(10)), shuffle=True),
             "ConcatSampler": ConcatSampler(
                 [ListSampler(list(range(10))), ListSampler(list(range(10, 20)))], shuffle=True

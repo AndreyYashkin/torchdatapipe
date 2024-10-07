@@ -1,7 +1,7 @@
 repos:
 -
     repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.5.0"
+    rev: "v4.6.0"
     hooks:
     -
         id: check-yaml
@@ -10,14 +10,20 @@ repos:
         args: [--maxkb=1024]
 -
     repo: https://github.com/psf/black-pre-commit-mirror
-    rev: "24.4.1"
+    rev: "24.8.0"
     hooks:
     -
         id: black
         args: [--line-length=100]
 -
     repo: https://github.com/pycqa/flake8
-    rev: "7.0.0"
+    rev: "7.1.1"
     hooks:
     -
         id: flake8
+-
+    repo: https://github.com/kynan/nbstripout
+    rev: "0.7.1"
+    hooks:
+    -
+        id: nbstripout

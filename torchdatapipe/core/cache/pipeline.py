@@ -46,21 +46,6 @@ def get_cache_description(source, preprocessor, writer):
     )
 
 
-def check_overrides(ll):
-    sw_hash = {}
-    for d in ll:
-        source = d["source"]
-        preprocessor = d["preprocessor"]
-        writer = d["writer"]
-        roots = (source.root, writer.root)
-        descr = get_cache_description(source, preprocessor, writer)
-        if roots in sw_hash:
-            assert sw_hash[roots] == descr
-        else:
-            sw_hash[roots] = descr
-    pass
-
-
 def write_cache_description(source, preprocessor, writer, file_fn=writer_root_2_cache_json):
     description = get_cache_description(source, preprocessor, writer)
     # В словаре int -> val меняем на str -> val
@@ -77,6 +62,8 @@ def delete_cache_description(writer, file_fn=writer_root_2_cache_json):
 
 
 def check_cache_description(source, preprocessor, writer, file_fn=writer_root_2_cache_json):
+    if os.environ.get("TORCHDATAPIPE_FORCE_CACHE"):
+        return False
     json_path = file_fn(writer.root)
     if not os.path.isfile(json_path):
         return False

@@ -35,9 +35,8 @@ class Cache(ABC):
     def cache_dir(self):
         pass
 
-    def cache(self, trust_cache=True):
-        # trust_cache = False
-        if not trust_cache or not self.check_cache_description():
+    def cache(self):
+        if not self.check_cache_description():
             self.delete_cache_description()
             self.create_cache()
             self.write_cache_description()

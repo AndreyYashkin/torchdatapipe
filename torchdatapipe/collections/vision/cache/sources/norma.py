@@ -70,6 +70,7 @@ class NormaSource(Source):
 
     def start_caching(self):
         self.dataset_name = os.path.basename(self.root)
+        assert len(self.dataset_name)
         dataset_annotation_path = os.path.join(self.root, self.dataset_name + ".json")
         with open(dataset_annotation_path) as f:
             dataset_annotation = json.load(f)

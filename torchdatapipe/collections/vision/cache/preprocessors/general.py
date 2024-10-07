@@ -1,34 +1,47 @@
 import cv2
-from torchdatapipe.core.cache.preprocessors import Preprocessor
+from abc import abstractmethod
+from torchdatapipe.core.cache.preprocessors import PassNonePreprocessor
 from torchdatapipe.collections.vision.utils.general import rect_mode_size
 
 
-class ResizeScene(Preprocessor):
-    def __init__(self, imgsz, interpolation=cv2.INTER_NEAREST, rect_mode=False):
-        self.imgsz = list(imgsz)
+class ResizeSceneBase(PassNonePreprocessor):
+    def __init__(self, imgsz, interpolation=cv2.INTER_NEAREST):
         self.interpolation = interpolation
-        self.rect_mode = rect_mode
+
+    @abstractmethod
+    def get_imgsz(self, scene):
+        pass
 
     def start_caching(self):
         pass
 
-    def __call__(self, item):
-        imgsz = self.imgsz
-
+    def call_impl(self, item):
         image = item.image
         old_imgsz = image.shape[:2]
-
-        if self.rect_mode:
-            imgsz = rect_mode_size(old_imgsz, imgsz)
+        imgsz = self.get_imgsz(item)
 
         item.image = cv2.resize(image, imgsz[::-1], interpolation=self.interpolation)
         if item.annotation is not None:
-            item.annotation.resize(old_imgsz, self.imgsz)
+            item.annotation.resize(imgsz, old_imgsz)
 
         return item
 
     def finish_caching(self):
         pass
+
+
+class ResizeScene(ResizeSceneBase):
+    def __init__(self, imgsz, interpolation=cv2.INTER_NEAREST, rect_mode=False):
+        super().__init__(interpolation)
+        self.imgsz = list(imgsz)
+        self.rect_mode = rect_mode
+
+    def get_imgsz(self, scene):
+        old_imgsz = scene.image.shape[:2]
+        imgsz = self.imgsz
+        if self.rect_mode:
+            imgsz = rect_mode_size(old_imgsz, imgsz)
+        return imgsz
 
     @property
     def version(self):

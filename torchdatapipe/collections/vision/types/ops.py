@@ -1,9 +1,31 @@
 from abc import ABC, abstractmethod
 
 
-class Resizable(ABC):
+class Copyable(ABC):
     @abstractmethod
-    def resize(self, old_size, new_size):
+    def copy(self) -> "Copyable":
+        pass
+
+
+# class Contactable(ABC):
+#     @abstractmethod
+#     def concatenate(self) -> "Contactable":
+#         pass
+#
+#     def cat(self) -> "Contactable":
+#         return self.concatenate()
+
+
+class Resizable(ABC):
+    # TODO тут вообще то обязателен только new_size, а остальное в kwargs
+    @abstractmethod
+    def resize(self, new_size, old_size=None, **kwargs):
+        pass
+
+
+class Clipable(ABC):
+    @abstractmethod
+    def clip(self) -> "Clipable":
         pass
 
 
@@ -13,7 +35,7 @@ class Flipable(ABC):
     @abstractmethod
     def flip(self, axis, **kwargs):
         # axis саписок true/false есть ли flip по этой оси
-        #  Если работаем в видео еще может быть ось время, кроме ширины и высоты
+        # Если работаем c видео, то еще может быть ось время, кроме ширины и высоты
         pass
 
 
@@ -31,7 +53,7 @@ class Shiftable(ABC):
         pass
 
 
-class Mixable(ABC):
-    @abstractmethod
-    def mix(self, other, mask, **kwargs):
-        pass
+# class Mixable(ABC):
+#     @abstractmethod
+#     def mix(self, other, mask, **kwargs):
+#         pass
