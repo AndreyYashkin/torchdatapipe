@@ -44,6 +44,7 @@ setuptools.setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     # version=__version__,
     packages=setuptools.find_packages(),
+    python_requires=">=3.9",
     install_requires=install_requires,
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
