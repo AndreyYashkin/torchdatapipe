@@ -18,7 +18,7 @@ class BinaryWriter(DatasetWriter):
 
     @property
     def version(self):
-        return "0.0.0"
+        return "0.0.1"
 
     @property
     def params(self):
@@ -33,6 +33,7 @@ class BinaryWriter(DatasetWriter):
 
     def start_caching(self):
         os.makedirs(self.root)
+        self.filenames = set()
 
     def get_filename(self, item, source_idx, list_idx):
         name = f"{item.id}_{list_idx}"
@@ -49,12 +50,14 @@ class BinaryWriter(DatasetWriter):
                 data[key] = codec.encode(data[key])
 
         filename = self.get_filename(item, source_idx, list_idx)
+        assert filename not in self.filenames, "Don't override {filename}!"
+        self.filenames.add(filename)
         pickle_cache = os.path.join(self.root, filename + ".pickle")
         with open(pickle_cache, "wb") as outfile:
             pickle.dump(dict(id=item.id, data=data), outfile)
 
     def finish_caching(self):
-        pass
+        self.filenames = None
 
     @property
     def dataset_kwargs(self):
