@@ -31,10 +31,13 @@ class ImageDataset(Dataset):
 
     @staticmethod
     def from_dir(root, imgsz, transforms=[], recursive=False):
-        exts = [".png", ".jpg", ".bmp"]
+        exts = [".png", ".jpg", ".bmp", ".jpeg", ".webp "]
         # exts = ["color.png"]
         # mask = "**/*" if recursive else "*"
-        mask = "*"
+        if recursive:
+            mask = "**/*"
+        else:
+            mask = "*"
         datasets = []
         for e in exts:
             for ext in [e.lower(), e.upper()]:
