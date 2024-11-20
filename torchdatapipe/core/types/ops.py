@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class Visualizable(ABC):
     @abstractmethod
-    def visualizate(self, **kwargs):
+    def visualize(self, **kwargs):
         pass
 
 

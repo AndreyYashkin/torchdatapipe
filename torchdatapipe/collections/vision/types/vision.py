@@ -13,14 +13,14 @@ class ImageScene(Visualizable, ClassMappable, Resizable):
 
     # TODO добавить метод для добавления текста к визаулизации
 
-    def visualizate(self, annotation=False, grayscale=False, **kwargs) -> np.array:
+    def visualize(self, annotation=False, grayscale=False, **kwargs) -> np.array:
         image = self.image  # .copy()
         if grayscale:
             image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
             image = np.stack([image, image, image], axis=-1)
         if annotation:
             # TODO и тут тоже поменять
-            image = self.annotation.visualizate(image, **kwargs)
+            image = self.annotation.visualize(image, **kwargs)
         return image
 
     def map_class(self, mapping, unknown_ok, default=None):
