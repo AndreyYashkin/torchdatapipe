@@ -1,53 +1,24 @@
 import os
 import cv2
 import numpy as np
-from glob import glob
-from torch.utils.data import Dataset, ConcatDataset
+from torch.utils.data import Dataset
+from torchdatapipe.core.utils.filesystem import find_mimetype_files
 from torchdatapipe.collections.vision.types.vision import ImageScene
-from torchdatapipe.collections.vision.utils.general import rect_mode_size
 
 
 # TODO должен быть от списка файлов
 class ImageDataset(Dataset):
-    def __init__(self, names, files, imgsz=None, rect_mode=False):
+    def __init__(self, names, files, transform=None):
         self.names = names
         self.files = files
-        self.imgsz = imgsz
-        self.rect_mode = rect_mode
+        self.transform = transform
 
     @staticmethod
-    def from_mask(root, mask, imgsz, transforms=[], recursive=False):
-        names, images = [], []
-        _images = sorted(glob(f"*{mask}", root_dir=root, recursive=recursive))
-        print(root, f"*{mask}")
-        images = []
-        for image in _images:
-            name = image[: -len(mask) + 1]
-            names.append(name)
-            image = os.path.join(root, image)
-            images.append(image)
-
-        return ImageDataset(names, images, imgsz, transforms)
-
-    @staticmethod
-    def from_dir(root, imgsz, transforms=[], recursive=False):
-        exts = [".png", ".jpg", ".bmp", ".jpeg", ".webp "]
-        # exts = ["color.png"]
-        # mask = "**/*" if recursive else "*"
-        if recursive:
-            mask = "**/*"
-        else:
-            mask = "*"
-        datasets = []
-        for e in exts:
-            for ext in [e.lower(), e.upper()]:
-                ds = ImageDataset.from_mask(root, mask + ext, imgsz, transforms, recursive)
-                if len(ds):
-                    print("ext", root, mask + ext, len(ds))
-                if len(ds):
-                    datasets.append(ds)
-        # print("datasets", datasets)
-        return ConcatDataset(datasets)
+    def from_dir(root, transform=None, recursive=False):
+        files = find_mimetype_files(root, "image", recursive)
+        names = [os.path.basename(path) for path in files]
+        files = [os.path.join(root, path) for path in files]
+        return ImageDataset(names, files, transform)
 
     def __len__(self):
         return len(self.files)
@@ -55,12 +26,12 @@ class ImageDataset(Dataset):
     def __getitem__(self, idx):
         name = self.names[idx]
         path = self.files[idx]
+        assert os.path.isfile(path)
         image = cv2.imread(path)
-        if self.imgsz is not None:
-            imgsz = rect_mode_size(image.shape, self.imgsz) if self.rect_mode else self.imgsz
-            image = cv2.resize(image, imgsz[::-1])
+        assert image is not None
+        if self.transform is not None:
+            image = self.transform(image)
 
-        # TODO убрать расширение
         return ImageScene(image=image, id=name)
 
 

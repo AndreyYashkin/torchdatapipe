@@ -1,4 +1,6 @@
 import os
+import cv2
+from functools import partial
 from torchdatapipe.collections.vision.datasets import ImageDataset
 from torchdatapipe.core.pipelines import (
     MapStyleDataPipeline,
@@ -15,24 +17,23 @@ from torchdatapipe.collections.vision.types import ImageScene
 
 
 class ImageSceneInference(MapStyleDataPipeline):
-    def __init__(self, root, transforms=[], recursive=False):
+    def __init__(self, root, recursive=False):
         self.root = root
-        self.transforms = transforms
         self.recursive = recursive
 
-    def setup(self, cache_dir, imgsz):
-        self.__dataset = ImageDataset.from_dir(self.root, imgsz, self.transforms, self.recursive)
+    def get_transform(self, imgsz):
+        return partial(cv2.resize, dsize=imgsz[::-1])
+
+    def setup(self, data_prefix, imgsz, **kwargs):
+        transform = self.get_transform(imgsz)
+        self.__dataset = ImageDataset.from_dir(self.root, transform, self.recursive)
 
     @property
     def dataset(self):
         return self.__dataset
 
     def get_cache_desc(self, data_prefix, cache_dir, **kwargs) -> list[PipelineCacheDescription]:
-        cache_pipe = self.create_cache_pipeline(data_prefix, cache_dir, **kwargs)
-        deps = set([cache_pipe.source.root])
-        outs = set()
-        desc = None
-        return [PipelineCacheDescription(deps=deps, outs=outs, desc=desc)]
+        return []
 
 
 def binary2item_fn(id, data):
@@ -45,7 +46,7 @@ def item2binary_fn(item):
 
 
 class CachedImageSceneInference(DefaultDatasetPipeline):
-    def __init__(self, root, transforms=[], recursive=False):
+    def __init__(self, root, recursive=False):
         super().__init__(root)
         self.recursive = recursive
         self.code = dict(image=PNGCodec())
