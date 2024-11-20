@@ -24,7 +24,7 @@ class PipelineCacheDescription:
         return d1.desc != d2.desc
 
     @staticmethod
-    def check_conflicts(d: list["PipelineCacheDescription"]) -> bool:
+    def check_conflicts(d: list["PipelineCacheDescription"]) -> tuple[bool, dict]:
         for i in range(len(d)):
             for j in range(i + 1, len(d)):
                 if PipelineCacheDescription.conflict(d[i], d[j]):
