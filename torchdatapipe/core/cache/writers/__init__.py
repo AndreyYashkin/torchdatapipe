@@ -1,2 +1,2 @@
-from .writer import Writer, DatasetWriter  # noqa: F401
-from .binary import BinaryItem, BinaryWriter  # noqa: F401
+from .writer import Writer  # noqa: F401
+from .binary import BinaryWriter  # noqa: F401

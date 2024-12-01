@@ -10,9 +10,9 @@ from torchdatapipe.core.pipelines import (
 from torchdatapipe.core.cache.preprocessors import Sequential, ToList
 from torchdatapipe.collections.vision.cache.sources import ImageDirSource
 from torchdatapipe.collections.vision.cache.preprocessors import ResizeScene
-from torchdatapipe.core.cache.writers import BinaryWriter, BinaryItem
+from torchdatapipe.core.cache.writers import BinaryWriter
 from torchdatapipe.collections.vision.codecs.cv2 import PNGCodec
-from torchdatapipe.core.datasets import BinraryDataset
+from torchdatapipe.core.datasets import BinaryDataset
 from torchdatapipe.collections.vision.types import ImageScene
 
 
@@ -36,13 +36,12 @@ class ImageSceneInference(MapStyleDataPipeline):
         return []
 
 
-def binary2item_fn(id, data):
-    return ImageScene(id=id, image=data["image"])
+def dict2item_fn(data):
+    return ImageScene(id=data["id"], image=data["image"])
 
 
-def item2binary_fn(item):
-    data = dict(image=item.image)
-    return BinaryItem(id=item.id, data=data)
+def item2dict_fn(item):
+    return dict(id=item.id, image=item.image)
 
 
 class CachedImageSceneInference(DefaultDatasetPipeline):
@@ -58,11 +57,11 @@ class CachedImageSceneInference(DefaultDatasetPipeline):
         return Sequential([ResizeScene(imgsz), ToList()])
 
     def get_writer(self, writer_root, **kwargs):
-        writer = BinaryWriter(writer_root, self.code, item2binary_fn)
+        writer = BinaryWriter(writer_root, self.code, item2dict_fn)
         return writer
 
     def get_dataset(self, writer_root, imgsz, **kwargs):
-        return BinraryDataset(writer_root, self.code, binary2item_fn)
+        return BinaryDataset(writer_root, self.code, dict2item_fn)
 
 
 # VideoSceneInference

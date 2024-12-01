@@ -19,10 +19,3 @@ class Writer(CachingElemet):
             rmtree(self.root)
 
     # TODO проверить целостность?
-
-
-class DatasetWriter(Writer):
-    @property
-    @abstractmethod
-    def dataset_kwargs(self):
-        pass

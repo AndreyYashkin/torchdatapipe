@@ -1,34 +1,40 @@
 import os
 import pickle
-from glob import glob
+from copy import deepcopy
 from torch.utils.data import Dataset
-from torchdatapipe.core.cache.writers.binary import BinaryItem
 
 
 def identity(x):
     return x
 
 
-class BinraryDataset(Dataset):
-    def __init__(self, root, encoders, binary2item_fn, transform_fn=identity):
+class BinaryDataset(Dataset):
+    def __init__(self, root, encoders, dict2item_fn, transform_fn=identity):
         self.root = root
-        self.files = sorted(glob("*.pickle", root_dir=root))
+        pickle_cache = os.path.join(root, "cache.pickle")
+        with open(pickle_cache, "rb") as infile:
+            data = pickle.load(infile)
+        self.filenames = data["filenames"]
+        self.fast_cache = data["fast_cache"]
         self.encoders = encoders
-        self.binary2item_fn = binary2item_fn
+        self.dict2item_fn = dict2item_fn
         self.transform_fn = transform_fn
 
     def __len__(self):
-        return len(self.files)
+        return len(self.filenames)
+
+    def decode(self, data):
+        for key, codec in self.encoders.items():
+            if key in data:
+                data[key] = codec.decode(data[key])
 
     def __getitem__(self, idx):
-        path = os.path.join(self.root, self.files[idx])
+        filename = self.filenames[idx]
+        path = os.path.join(self.root, "items", filename + ".pickle")
         with open(path, "rb") as infile:
-            item = pickle.load(infile)
-            item = BinaryItem(**item)
-
-        for key, codec in self.encoders.items():
-            if key in item.data:
-                item.data[key] = codec.decode(item.data[key])
-
-        item = self.binary2item_fn(item.id, item.data)
+            slow_data = pickle.load(infile)
+        fast_data = deepcopy(self.fast_cache[filename])
+        data = {**slow_data, **fast_data}
+        self.decode(data)
+        item = self.dict2item_fn(data)
         return self.transform_fn(item)
