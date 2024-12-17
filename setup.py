@@ -17,10 +17,13 @@ def req_file(filename, folder="requirements"):
 install_requires = req_file("requirements.txt")
 
 OPENCV_HEADLESS = os.getenv("OPENCV_HEADLESS", "0") == "1"
+# NumPy 2.0 support
+# https://github.com/opencv/opencv-python/releases/tag/84
+OPENCV_VERSION = ">=4.10.0.84, <5"
 if OPENCV_HEADLESS:
-    install_requires = ["opencv-python-headless < 5"]
+    install_requires = [f"opencv-python-headless{OPENCV_VERSION}"]
 else:
-    install_requires = ["opencv-python < 5"]
+    install_requires = [f"opencv-python{OPENCV_VERSION}"]
 
 os.environ["DATUMARO_HEADLESS"] = "1" if OPENCV_HEADLESS else "0"
 
@@ -35,7 +38,7 @@ for key, values in extras_require.items():
     extras_require_torch[key + "_torch"] = values + torch_req
 extras_require.update(extras_require_torch)
 
-print(setuptools.find_packages())
+# print(setuptools.find_packages())
 
 setuptools.setup(
     name="torchdatapipe",
