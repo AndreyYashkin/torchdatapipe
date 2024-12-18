@@ -75,19 +75,19 @@ class ToList(Preprocessor):
         return None
 
 
-class TransormList(Preprocessor):
-    def __init__(self, transoform):
-        self.transoform = transoform
+class TransformList(Preprocessor):
+    def __init__(self, transform):
+        self.transform = transform
 
     def start_caching(self):
-        self.transoform.start_caching()
+        self.transform.start_caching()
 
     def __call__(self, items):
         for item in items:
-            yield self.transoform(item)
+            yield self.transform(item)
 
     def finish_caching(self):
-        self.transoform.finish_caching()
+        self.transform.finish_caching()
 
     @property
     def version(self):
@@ -95,7 +95,7 @@ class TransormList(Preprocessor):
 
     @property
     def params(self):
-        return self.transoform.cache_description()
+        return self.transform.cache_description()
 
 
 class Flatten(Preprocessor):
