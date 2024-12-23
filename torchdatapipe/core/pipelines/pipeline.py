@@ -33,6 +33,10 @@ class PipelineCacheDescription:
 
 
 class DataPipeline(ABC):
+    @abstractmethod
+    def children(self) -> list["DataPipeline"]:
+        pass
+
     # TODO setup -> prepare_data, teardown ???
     @abstractmethod
     def setup(self, *args, **kwargs):
@@ -60,6 +64,9 @@ class Identity(DataPipeline):
     def __init__(self, pipeline: DataPipeline):
         self.pipeline = pipeline
 
+    def children(self) -> list["DataPipeline"]:
+        return [self.pipeline]
+
     @property
     def dataset(self):
         return self.pipeline.dataset
@@ -75,6 +82,9 @@ class Identity(DataPipeline):
 
 
 class MapStyleDataPipeline(DataPipeline):
+    def children(self) -> list["DataPipeline"]:
+        return []
+
     def get_sampler(self, shuffle=False, **kwargs):
         indices = np.arange(len(self.dataset))
         return ListSampler(indices, shuffle=shuffle)
@@ -154,6 +164,9 @@ class ConcatPipeline(DataPipeline):
         super().__init__()
         self.pipelines = pipelines
 
+    def children(self) -> list["DataPipeline"]:
+        return self.pipelines
+
     def setup(self, *args, **kwargs):
         datasets = []
         for pipeline in self.pipelines:
@@ -185,6 +198,9 @@ class BaseMultiIndexDataPipeline(DataPipeline):
     def __init__(self, portions: tuple[DataPipeline]):
         self.portions = portions
 
+    def children(self) -> list["DataPipeline"]:
+        return list(self.portions)
+
     # def dataset(self):
     #     # datasets = []
     #     # ds = ConcatDataset(datasets)
@@ -210,6 +226,9 @@ class BaseMultiIndexDataPipeline(DataPipeline):
 class TransformPipeline(DataPipeline):
     def __init__(self, pipeline: DataPipeline):
         self.pipeline = pipeline
+
+    def children(self) -> list["DataPipeline"]:
+        return [self.pipeline]
 
     def get_sampler(self, shuffle=False, **kwargs):
         return self.pipeline.get_sampler(shuffle, **kwargs)

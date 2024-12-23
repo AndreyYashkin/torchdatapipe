@@ -6,6 +6,9 @@ class RAMCachePipeline(DataPipeline):
     def __init__(self, pipeline):
         self.pipeline = pipeline
 
+    def children(self) -> list[DataPipeline]:
+        return [self.pipeline]
+
     def setup(self, *args, **kwargs):
         self.pipeline.setup(*args, **kwargs)
         self.__dataset = RAMCacheDataset(self.pipeline.dataset)
