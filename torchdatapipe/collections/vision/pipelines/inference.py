@@ -6,6 +6,7 @@ from torchdatapipe.core.pipelines import (
     MapStyleDataPipeline,
     DefaultDatasetPipeline,
     PipelineCacheDescription,
+    MultiplePipelines,
 )
 from torchdatapipe.core.cache.preprocessors import Sequential, ToList
 from torchdatapipe.collections.vision.cache.sources import ImageDirSource
@@ -16,7 +17,7 @@ from torchdatapipe.core.datasets import BinaryDataset
 from torchdatapipe.collections.vision.types import ImageScene
 
 
-class ImageSceneInference(MapStyleDataPipeline):
+class ImageSceneInference(MapStyleDataPipeline, MultiplePipelines):
     def __init__(self, root, recursive=False):
         self.root = root
         self.recursive = recursive
@@ -44,7 +45,7 @@ def item2dict_fn(item):
     return dict(id=item.id, image=item.image)
 
 
-class CachedImageSceneInference(DefaultDatasetPipeline):
+class CachedImageSceneInference(DefaultDatasetPipeline, MultiplePipelines):
     def __init__(self, root, recursive=False):
         super().__init__(root)
         self.recursive = recursive
@@ -53,7 +54,7 @@ class CachedImageSceneInference(DefaultDatasetPipeline):
     def get_source(self, data_prefix, **kwargs):
         return ImageDirSource(os.path.join(data_prefix, self.data_root))
 
-    def get_preprocessor(self, source, imgsz):
+    def get_preprocessor(self, source, imgsz, **kwargs):
         return Sequential([ResizeScene(imgsz), ToList()])
 
     def get_writer(self, writer_root, **kwargs):
