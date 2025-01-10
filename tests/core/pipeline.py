@@ -4,8 +4,8 @@ import numpy as np
 from tempfile import TemporaryDirectory
 from torchdatapipe.core.cache.sources import Source
 from torchdatapipe.core.cache.preprocessors import ToList
-from torchdatapipe.core.cache.writers import BinaryWriter, BinaryItem
-from torchdatapipe.core.datasets import BinraryDataset
+from torchdatapipe.core.cache.writers import BinaryWriter
+from torchdatapipe.core.datasets import BinaryDataset
 from torchdatapipe.core.pipelines import DefaultDatasetPipeline, PipelineCacheDescription
 
 
@@ -40,13 +40,12 @@ class LinesSource(Source):
         self.lines = None
 
 
-def item2binary_fn(item):
+def item2dict_fn(item):
     idx, numbers = item
-    data = dict(numbers=numbers)
-    return BinaryItem(id=idx, data=data)
+    return dict(id=idx, numbers=numbers)
 
 
-def binary2item_fn(id, data):
+def dict2item_fn(id, data):
     return data["numbers"]
 
 
@@ -63,11 +62,11 @@ class TestPipeline(DefaultDatasetPipeline):
         return ToList()
 
     def get_writer(self, writer_root, **kwargs):
-        writer = BinaryWriter(writer_root, self.code, item2binary_fn)
+        writer = BinaryWriter(writer_root, self.code, item2dict_fn)
         return writer
 
     def get_dataset(self, writer_root, **kwargs):
-        return BinraryDataset(writer_root, self.code, binary2item_fn)
+        return BinaryDataset(writer_root, self.code, dict2item_fn)
 
 
 class UnitTestPipeline(unittest.TestCase):
