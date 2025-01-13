@@ -22,12 +22,13 @@ class ImageSceneInference(MapStyleDataPipeline, MultiplePipelines):
         self.root = root
         self.recursive = recursive
 
-    def get_transform(self, imgsz):
+    def get_transform(self, imgsz, **kwargs):
         return partial(cv2.resize, dsize=imgsz[::-1])
 
     def setup(self, data_prefix, imgsz, **kwargs):
-        transform = self.get_transform(imgsz)
-        self.__dataset = ImageDataset.from_dir(self.root, transform, self.recursive)
+        transform = self.get_transform(imgsz, **kwargs)
+        root = os.path.join(data_prefix, self.root)
+        self.__dataset = ImageDataset.from_dir(root, transform, self.recursive)
 
     @property
     def dataset(self):
